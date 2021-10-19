@@ -45,6 +45,7 @@
     "lint": "npm run prettier && npm run tslint",
     "tslint": "tslint -p tsconfig.json -c tslint.json 'src/**/*.ts'",
     "prettier": "prettier \"**/{*.json,*.yml,.*.yml,*.ts,.prettierrc,*.md}\" --write --list-different",
+    "prettier-check": "npm run prettier -- --write=false", 
     "semantic-release": "semantic-release"
   },
   "devDependencies": {
