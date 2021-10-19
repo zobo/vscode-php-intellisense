@@ -27,14 +27,14 @@ jobs:
       - name: Lint
         run: npm run tslint
       - name: Build VS Code extension
-        run: npm run build 
+        run: npm run build
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
           tools: composer
       - name: Composer Install
-        run: composer install --prefer-dist --no-interaction --optimize-autoloader 
+        run: composer install --prefer-dist --no-interaction --optimize-autoloader
 #  release:
 #    runs-on: ubuntu-18.04
 #    needs: test
@@ -55,7 +55,7 @@ jobs:
 #          php-version: 7.4
 #          tools: composer
 #      - name: Composer Install
-#        run: composer install --prefer-dist --no-interaction --optimize-autoloader 
+#        run: composer install --prefer-dist --no-interaction --optimize-autoloader
 #      - name: Release
 #        env:
 #          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
