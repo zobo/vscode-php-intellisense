@@ -54,7 +54,7 @@
     "@commitlint/config-conventional": "7.1.2",
     "@types/execa": "0.9.0",
     "@types/mocha": "9.0.0",
-    "@types/mz": "0.0.32",
+    "@types/mz": "2.7.4",
     "@types/node": "^16.11.17",
     "@types/semver": "^7.3.9",
     "@types/vscode": "^1.53.0",
