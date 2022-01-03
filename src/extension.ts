@@ -6,7 +6,6 @@ import * as semver from 'semver'
 import * as url from 'url'
 import * as vscode from 'vscode'
 import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, StreamInfo } from 'vscode-languageclient/node'
-import * as lsp from 'vscode-languageserver-protocol'
 const composerJson = require('../composer.json')
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
