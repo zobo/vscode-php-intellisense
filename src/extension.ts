@@ -8,8 +8,52 @@ import * as vscode from 'vscode'
 import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, StreamInfo } from 'vscode-languageclient/node'
 const composerJson = require('../composer.json')
 
+const clients: Map<string, LanguageClient> = new Map()
+
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
-    const conf = vscode.workspace.getConfiguration('php')
+    if (vscode.workspace.workspaceFolders !== undefined) {
+        for (const workspaceFolder of vscode.workspace.workspaceFolders) {
+            const client = await startClient(context, workspaceFolder)
+            if (client != null) {
+                clients.set(workspaceFolder.uri.toString(), client)
+                // Push the disposable to the context's subscriptions so that the
+                // client can be deactivated on extension deactivation
+                context.subscriptions.push(client.start())
+            }
+        }
+    } else {
+        const client = await startClient(context, null)
+        if (client != null) {
+            // Push the disposable to the context's subscriptions so that the
+            // client can be deactivated on extension deactivation
+            context.subscriptions.push(client.start())
+        }
+    }
+
+    vscode.workspace.onDidChangeWorkspaceFolders(async (event) => {
+        console.log(`onDidChangeWorkspaceFolders ${event.removed} ${event.added}`)
+        for (const workspaceFolder of event.removed) {
+            const client = clients.get(workspaceFolder.uri.toString())
+            if (client) {
+                clients.delete(workspaceFolder.uri.toString())
+                client.stop()
+            }
+        }
+        for (const workspaceFolder of event.added) {
+            const client = await startClient(context, workspaceFolder)
+            if (client != null) {
+                clients.set(workspaceFolder.uri.toString(), client)
+                context.subscriptions.push(client.start())
+            }
+        }
+    })
+}
+
+async function startClient(
+    context: vscode.ExtensionContext,
+    workspaceFolder: vscode.WorkspaceFolder | null
+): Promise<LanguageClient | null> {
+    const conf = vscode.workspace.getConfiguration('php', workspaceFolder)
     const executablePath =
         conf.get<string>('executablePath') ||
         conf.get<string>('validate.executablePath') ||
@@ -25,7 +69,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         if (selected === 'Open settings') {
             await vscode.commands.executeCommand('workbench.action.openGlobalSettings')
         }
-        return
+        return null
     }
 
     // Check path (if PHP is available and version is ^7.0.0)
@@ -45,14 +89,14 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
             vscode.window.showErrorMessage('Error spawning PHP: ' + err.message)
             console.error(err)
         }
-        return
+        return null
     }
 
     // Parse version and discard OS info like 7.0.8--0ubuntu0.16.04.2
     const match = stdout.match(/^PHP ([^\s]+)/m)
     if (!match) {
         vscode.window.showErrorMessage('Error parsing PHP version. Please check the output of php --version')
-        return
+        return null
     }
     let version = match[1].split('-')[0]
     // Convert PHP prerelease format like 7.0.0rc1 to 7.0.0-rc1
@@ -63,7 +107,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         vscode.window.showErrorMessage(
             `The language server needs at least PHP ${composerJson.config.platform.php} installed. Version found: ${version}`
         )
-        return
+        return null
     }
 
     let client: LanguageClient
@@ -112,10 +156,19 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
     // Options to control the language client
     const clientOptions: LanguageClientOptions = {
+        workspaceFolder: workspaceFolder ?? undefined,
         // Register the server for php documents
         documentSelector: [
-            { scheme: 'file', language: 'php' },
-            { scheme: 'untitled', language: 'php' },
+            {
+                scheme: 'file',
+                language: 'php',
+                pattern: workspaceFolder != null ? `${workspaceFolder.uri.fsPath}/**/*` : undefined,
+            },
+            {
+                scheme: 'untitled',
+                language: 'php',
+                pattern: workspaceFolder != null ? `${workspaceFolder.uri.fsPath}/**/*` : undefined,
+            },
         ],
         revealOutputChannelOn: RevealOutputChannelOn.Never,
         uriConverters: {
@@ -133,10 +186,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     }
 
     // Create the language client and start the client.
-    client = new LanguageClient('php-intellisense', 'PHP Language Server', serverOptions, clientOptions)
-    const disposable = client.start()
+    client = new LanguageClient(
+        'php-intellisense',
+        `PHP Language Server (${workspaceFolder?.name ?? 'untitled'})`,
+        serverOptions,
+        clientOptions
+    )
 
-    // Push the disposable to the context's subscriptions so that the
-    // client can be deactivated on extension deactivation
-    context.subscriptions.push(disposable)
+    return client
 }
