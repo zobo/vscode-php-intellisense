@@ -55,7 +55,7 @@
     "@types/mocha": "9.0.0",
     "@types/node": "^16.11.26",
     "@types/semver": "^7.3.9",
-    "@types/vscode": "^1.63.1",
+    "@types/vscode": "^1.63.2",
     "prettier": "^2.5.1",
     "semantic-release": "^18.0.1",
     "semantic-release-vsce": "^3.5.0",
