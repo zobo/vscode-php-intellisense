@@ -5,7 +5,14 @@ import * as path from 'path'
 import * as semver from 'semver'
 import * as url from 'url'
 import * as vscode from 'vscode'
-import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, StreamInfo } from 'vscode-languageclient/node'
+import {
+    ClientCapabilities,
+    LanguageClient,
+    LanguageClientOptions,
+    RevealOutputChannelOn,
+    ServerCapabilities,
+    StreamInfo,
+} from 'vscode-languageclient/node'
 const composerJson = require('../composer.json')
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
@@ -134,6 +141,28 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
     // Create the language client and start the client.
     client = new LanguageClient('php-intellisense', 'PHP Language Server', serverOptions, clientOptions)
+    client.registerFeature({
+        fillClientCapabilities: (capabilities: ClientCapabilities): void => {
+            ;(<{ [k: string]: any }>capabilities)['xfilesProvider'] = true
+            ;(<{ [k: string]: any }>capabilities)['xcontentProvider'] = true
+        },
+        initialize: (capabilities: ServerCapabilities, documentSelector: vscode.DocumentSelector | undefined): void => {
+            client.onRequest('workspace/xfiles', async (params): Promise<string[]> => {
+                const all = await vscode.workspace.findFiles('**/*')
+                return all.map((uri) => clientOptions.uriConverters!.code2Protocol(uri))
+            })
+            client.onRequest(
+                'textDocument/xcontent',
+                async (td: { textDocument: { uri: string } }): Promise<object> => {
+                    const buf = await vscode.workspace.fs.readFile(
+                        clientOptions.uriConverters!.protocol2Code(td.textDocument.uri)
+                    )
+                    return { text: buf.toString() }
+                }
+            )
+        },
+        dispose: (): void => {},
+    })
     const disposable = client.start()
 
     // Push the disposable to the context's subscriptions so that the
