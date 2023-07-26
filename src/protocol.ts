@@ -22,7 +22,6 @@ interface EvaluatableExpressionRegistrationOptions
 
 export namespace EvaluatableExpressionRequest {
     export const method: 'textDocument/xevaluatableExpression' = 'textDocument/xevaluatableExpression'
-    //const messageDirection: MessageDirection = MessageDirection.clientToServer;
     export const type = new ProtocolRequestType<
         EvaluatableExpressionParams,
         EvaluatableExpression | null,
