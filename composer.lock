@@ -257,7 +257,7 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/zobo/php-language-server-protocol",
-                "reference": "20f30df19a6788fe543c4712af0aa8db93d11791"
+                "reference": "5b0ccfa7a4eb91d1217fc10242251950b3b0d8ef"
             },
             "require": {
                 "php": ">=7.1"
@@ -310,7 +310,7 @@
                 "php",
                 "server"
             ],
-            "time": "2023-07-31T07:28:32+00:00"
+            "time": "2023-09-14T22:59:31+00:00"
         },
         {
             "name": "jetbrains/phpstorm-stubs",
