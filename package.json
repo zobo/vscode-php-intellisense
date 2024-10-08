@@ -52,7 +52,7 @@
   "devDependencies": {
     "@commitlint/cli": "16.3.0",
     "@commitlint/config-conventional": "16.2.4",
-    "@types/mocha": "9.1.1",
+    "@types/mocha": "10.0.9",
     "@types/node": "^16.11.26",
     "@types/semver": "^7.3.10",
     "@types/vscode": "^1.68.0",
